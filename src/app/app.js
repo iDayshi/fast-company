@@ -21,7 +21,7 @@ function App() {
     );
   };
 
-  if (users.length === 0) {
+  if (!users.length) {
     return (
       <h2>
         <span className="badge bg-danger">Никто с тобой не тусанёт</span>
