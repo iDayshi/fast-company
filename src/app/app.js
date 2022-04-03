@@ -11,7 +11,6 @@ function App() {
   };
 
   const handleToogleBookMark = (id) => {
-    console.log(id);
     setUsers(
       users.map((user) => {
         if (user._id === id) {
