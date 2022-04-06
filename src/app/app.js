@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import Users from './components/users';
-import SearchStatus from './components/searchStatus';
-import api from './api';
-import 'bootstrap/dist/css/bootstrap.css';
+import React, { useState } from "react";
+import Users from "./components/users";
+import SearchStatus from "./components/searchStatus";
+import api from "./api";
+import "bootstrap/dist/css/bootstrap.css";
 
 function App() {
   const [users, setUsers] = useState(api.users.fetchAll());
@@ -11,7 +11,6 @@ function App() {
   };
 
   const handleToogleBookMark = (id) => {
-    console.log(id);
     setUsers(
       users.map((user) => {
         if (user._id === id) {
@@ -29,32 +28,15 @@ function App() {
       </h2>
     );
   }
+
   return (
     <>
       {SearchStatus(users)}
-      <table className="table table-striped">
-        <thead>
-          <tr>
-            <th scope="col">Имя</th>
-            <th scope="col">Качества</th>
-            <th scope="col">Профессия</th>
-            <th scope="col">Встретился,раз</th>
-            <th scope="col">Оценка</th>
-            <th scope="col">Избранное</th>
-            <th scope="col"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((user) => (
-            <Users
-              key={user._id}
-              onDelete={handleDelete}
-              onFavorites={handleToogleBookMark}
-              {...user}
-            />
-          ))}
-        </tbody>
-      </table>
+      <Users
+        onDelete={handleDelete}
+        onToggleBookMark={handleToogleBookMark}
+        users={users}
+      />
     </>
   );
 }
