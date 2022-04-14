@@ -14,8 +14,12 @@ module.exports = {
   plugins: ["react"],
 
   rules: {
-    "space-before-function-paren": ["error", "never"],
+    "space-before-function-paren": [
+      "error",
+      { anonymous: "always", named: "never" }
+    ],
     semi: [2, "always"],
-    quotes: ["error", "double", { allowTemplateLiterals: true }]
+    quotes: ["error", "double", { allowTemplateLiterals: true }],
+    "multiline-ternary": 0
   }
 };
