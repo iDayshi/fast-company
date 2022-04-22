@@ -1,11 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Users from "./components/users";
-import SearchStatus from "./components/searchStatus";
 import api from "./api";
 import "bootstrap/dist/css/bootstrap.css";
 
 function App() {
-  const [users, setUsers] = useState(api.users.fetchAll());
+  const [users, setUsers] = useState();
+
+  useEffect(() => {
+    api.users.default.fetchAll().then((user) => setUsers(user));
+  }, []);
+
   const handleDelete = (userId) => {
     setUsers((prevState) => prevState.filter((user) => user._id !== userId));
   };
@@ -21,22 +25,23 @@ function App() {
     );
   };
 
-  if (!users.length) {
-    return (
-      <h2>
-        <span className="badge bg-danger">Никто с тобой не тусанёт</span>
-      </h2>
-    );
-  }
-
   return (
     <>
-      {SearchStatus(users)}
-      <Users
-        onDelete={handleDelete}
-        onToggleBookMark={handleToogleBookMark}
-        users={users}
-      />
+      {!users ? (
+        <div className="d-flex justify-content-center align-items-center  min-vh-100 min-vw-100">
+          <h2>
+            <div className="spinner-grow text-info" role="status">
+              <span className="visually m-5">2сек...</span>
+            </div>
+          </h2>
+        </div>
+      ) : (
+        <Users
+          onToggleBookMark={handleToogleBookMark}
+          onDelete={handleDelete}
+          users={users}
+        />
+      )}
     </>
   );
 }
