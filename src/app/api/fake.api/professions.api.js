@@ -20,7 +20,14 @@ const fetchAll = () =>
       resolve(professions);
     }, 2000);
   });
+const getById = (id) =>
+  new Promise((resolve) => {
+    window.setTimeout(function () {
+      resolve(professions.find((profession) => profession._id === id));
+    }, 2000);
+  });
 
 export default {
-  fetchAll
+  fetchAll,
+  getById
 };

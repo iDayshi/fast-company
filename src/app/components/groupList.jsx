@@ -9,17 +9,18 @@ const GroupList = ({
   selectedItem
 }) => {
   return (
-    <ul className="list-group">
+    <ul className="list-group d-flex flex-row justify-content-center align-items-center">
       {Object.keys(items).map((item) => (
         <li
           key={items[item][valueProperty]}
           className={
-            "list-group-item" + (items[item] === selectedItem ? " active" : "")
+            "list-group-item list-group-item-action list-group-item-dark" +
+            (items[item] === selectedItem ? " active" : "")
           }
           onClick={() => onItemSelect(items[item])}
           role="button"
         >
-          {items[item][contentProperty]}
+          <h6>{items[item][contentProperty]}</h6>
         </li>
       ))}
     </ul>

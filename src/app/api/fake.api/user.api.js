@@ -28,7 +28,7 @@ const qualities = {
   uncertain: {
     _id: "67rdca3eeb7f6fgeed471103",
     name: "Неуверенный",
-    color: "dark"
+    color: "warning"
   }
 };
 
@@ -58,7 +58,8 @@ const users = [
     qualities: [qualities.buller],
     completedMeetings: 247,
     rate: 3.5,
-    bookmark: false
+    bookmark: false,
+    foto: "../assets/foto/2589.jpg"
   },
   {
     _id: "67rdca3eeb7f6fgeed471818",
@@ -150,6 +151,14 @@ const fetchAll = () =>
     }, 2000);
   });
 
+const getById = (id) =>
+  new Promise((resolve) => {
+    window.setTimeout(function () {
+      resolve(users.find((users) => users._id === id));
+    }, 2000);
+  });
+
 export default {
-  fetchAll
+  fetchAll,
+  getById
 };
