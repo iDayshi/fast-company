@@ -1,23 +1,20 @@
 import React, { useState, useEffect } from "react";
 import Pagination from "./pagination";
 import { paginate } from "../utils/paginate";
-import { useParams } from "react-router-dom";
 import PropTypes from "prop-types";
 import GroupList from "./groupList";
 import api from "../api";
 import SearchStatus from "./searchStatus";
 import UserTable from "./usersTable";
 import _ from "lodash";
-import UsersPage from "./userPage";
+import { searchUser } from "../utils/searhUsers";
 
-const Users = (props) => {
+const UsersList = (props) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [profession, setProfession] = useState();
   const [selectedProf, setSelectedProf] = useState();
   const [sortBy, setSortBy] = useState({ iter: "name", order: "asc" });
-
-  const param = useParams();
-  const { userId } = param;
+  const [findUser, setFilterUser] = useState("");
 
   const pageSize = 6;
 
@@ -62,9 +59,13 @@ const Users = (props) => {
     setSortBy(item);
   };
 
+  const changeUsers = (event) => {
+    setFilterUser(event.target.value);
+  };
+
   if (!users) {
     return (
-      <div className="d-flex justify-content-center align-items-center  min-vh-100 min-vw-100">
+      <div className="container d-flex justify-content-center align-items-center m-10">
         <h2>
           <div className="spinner-grow text-info" role="status">
             <span className="visually m-5">2сек...</span>
@@ -73,9 +74,14 @@ const Users = (props) => {
       </div>
     );
   } else {
-    const filteredUsers = selectedProf
+    let filteredUsers = selectedProf
       ? users.filter((user) => user.profession.name === selectedProf.name)
       : users;
+
+    filteredUsers = findUser
+      ? searchUser(filteredUsers, findUser)
+      : filteredUsers;
+
     const count = filteredUsers.length;
 
     const sortedUsers = _.orderBy(filteredUsers, [sortBy.path], [sortBy.order]);
@@ -83,25 +89,9 @@ const Users = (props) => {
     const userCrop = paginate(sortedUsers, currentPage, pageSize);
 
     const clearFilter = () => {
+      setFilterUser("");
       setSelectedProf();
     };
-
-    if (userId) {
-      const selectUser = users.find((user) => user._id === userId);
-      if (selectUser) {
-        return <UsersPage {...selectUser} />;
-      } else {
-        return (
-          <h2>
-            <div className="spinner text-info" role="status">
-              <span className="visually m-5">
-                Данный пользователь не найден! Вернитесь к списку пользователей!
-              </span>
-            </div>
-          </h2>
-        );
-      }
-    }
 
     if (!users.length) {
       return (
@@ -117,20 +107,28 @@ const Users = (props) => {
 
     return (
       <div className="d-flex flex-column align-items-center ">
-        <div className="d-flex flex-column justify-content-center align-items-center">
+        <div className="container d-flex flex-column justify-content-center align-items-center">
           <SearchStatus length={count} reset={clearFilter} />
           {profession && (
-            <div className="d-flex flex-row justify-content-center align-items-center p-3">
+            <div className="list-group">
               <GroupList
                 selectedItem={selectedProf}
                 items={profession}
                 onItemSelect={handleProfessionSelect}
               />
               <button className="btn btn-danger m-2" onClick={clearFilter}>
-                Очистить
+                Все пользователи
               </button>
             </div>
           )}
+          <h3>Поиск пользователя</h3>
+          <input
+            type="text"
+            onChange={changeUsers}
+            className="m-2 w-80 info"
+            placeholder="Введите имя"
+            value={findUser}
+          />
           {count > 0 && (
             <UserTable
               users={userCrop}
@@ -155,8 +153,8 @@ const Users = (props) => {
   }
 };
 
-Users.propTypes = {
+UsersList.propTypes = {
   users: PropTypes.array
 };
 
-export default Users;
+export default UsersList;

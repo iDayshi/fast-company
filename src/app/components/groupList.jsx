@@ -9,7 +9,7 @@ const GroupList = ({
   selectedItem
 }) => {
   return (
-    <ul className="list-group d-flex flex-row justify-content-center align-items-center">
+    <ul className="list-group list-group-horizontal d-flex flex-row justify-content-center align-items-center">
       {Object.keys(items).map((item) => (
         <li
           key={items[item][valueProperty]}
