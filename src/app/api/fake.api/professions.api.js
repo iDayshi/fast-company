@@ -17,17 +17,10 @@ export const professions = [
 const fetchAll = () =>
   new Promise((resolve) => {
     window.setTimeout(function () {
-      resolve(professions);
-    }, 2000);
-  });
-const getById = (id) =>
-  new Promise((resolve) => {
-    window.setTimeout(function () {
-      resolve(professions.find((profession) => profession._id === id));
+      resolve(professionsObject);
     }, 2000);
   });
 
 export default {
-  fetchAll,
-  getById
+  fetchAll
 };
