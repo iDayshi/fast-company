@@ -8,51 +8,24 @@ const MultiSelectField = ({ options, onChange, name, label, defaultValue }) => {
       ? Object.values(options)
       : options;
 
-  const getQualities = (qualities) => {
-    const newArrQualities = [];
-    qualities.map((elem) =>
-      newArrQualities.push({
-        label: elem.name,
-        value: elem._id,
-        color: elem.color
-      })
-    );
-    return newArrQualities;
-  };
-
-  const getQualitiesEdit = (elements) => {
-    const newArrQualities = [];
-    elements.map((elem) =>
-      newArrQualities.push({
-        _id: elem.value,
-        name: elem.label,
-        color: elem.color
-      })
-    );
-    return newArrQualities;
-  };
-
-  defaultValue = getQualities(defaultValue);
-
   const handleChange = (value) => {
-    onChange({ name: name, value: getQualitiesEdit(value) });
+    onChange({ name: name, value });
   };
 
   const customStyles = {
-    menu: (provided, asdas) => ({
+    menu: (provided) => ({
       ...provided,
       color: "black"
     })
   };
 
   return (
-    <div className="mb-3">
+    <div className="mb-4">
       <label className="form-label">{label}</label>
       <Select
         isMulti
         closeMenuOnSelect={false}
         defaultValue={defaultValue}
-        key={optionsArray.value}
         options={optionsArray}
         className="basic-multi-select"
         classNamePrefix="select"
@@ -63,13 +36,12 @@ const MultiSelectField = ({ options, onChange, name, label, defaultValue }) => {
     </div>
   );
 };
-
 MultiSelectField.propTypes = {
-  onChange: PropTypes.func,
-  defaultValue: PropTypes.array,
   options: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
+  onChange: PropTypes.func,
   name: PropTypes.string,
-  label: PropTypes.string
+  label: PropTypes.string,
+  defaultValue: PropTypes.array
 };
 
 export default MultiSelectField;
