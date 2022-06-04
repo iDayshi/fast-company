@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { useHistory } from "react-router-dom";
+import Profession from "./profession";
 
 const UserCard = ({ user }) => {
   const history = useHistory();
@@ -24,6 +25,7 @@ const UserCard = ({ user }) => {
           />
           <div className="mt-3">
             <h4>{user.name}</h4>
+            <Profession id={user.profession} />
             <p className="text-secondary mb-1">{user.profession.name}</p>
             <div className="text-muted">
               <i
