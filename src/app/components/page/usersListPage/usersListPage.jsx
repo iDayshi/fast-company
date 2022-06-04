@@ -68,7 +68,7 @@ const UsersListPage = (props) => {
       <div className="container d-flex justify-content-center align-items-center m-10">
         <h2>
           <div className="spinner-grow text-info" role="status">
-            <span className="visually m-5">2сек...</span>
+            <span className="visually m-5">Загрузка пользователей...</span>
           </div>
         </h2>
       </div>
