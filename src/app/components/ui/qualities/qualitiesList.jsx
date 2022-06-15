@@ -6,7 +6,7 @@ const QualitiesList = ({ qualities }) => {
   return (
     <>
       {qualities.map((qual) => (
-        <Qualitie key={qual._id} {...qual} />
+        <Qualitie key={qual} _id={qual} />
       ))}
     </>
   );
