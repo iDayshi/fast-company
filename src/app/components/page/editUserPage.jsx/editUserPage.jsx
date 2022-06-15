@@ -55,11 +55,6 @@ const EditUserPage = () => {
         qualities: getQualities(qualities)
       })
       .then((data) => history.push(`/users/${data._id}`));
-    console.log({
-      ...data,
-      profession: getProfessionById(profession),
-      qualities: getQualities(qualities)
-    });
   };
   const transformData = (data) => {
     return data.map((qual) => ({ label: qual.name, value: qual._id }));

@@ -39,11 +39,9 @@ const AuthProvaider = ({ children }) => {
       });
       setTokens(data);
       await createUser({ _id: data.localId, email, ...rest });
-      console.log(data);
     } catch (error) {
       errorCatcher(error);
       const { code, message } = error.response.data.error;
-      console.log(code, message);
       if (code === 400) {
         if (message === "EMAIL_EXISTS") {
           const errorObject = {
@@ -64,11 +62,9 @@ const AuthProvaider = ({ children }) => {
         returnSecureToken: true
       });
       setTokens(data);
-      console.log(data);
     } catch (error) {
       errorCatcher(error);
       const { code, message } = error.response.data.error;
-      console.log(code, message);
       if (code === 400) {
         if (message === "INVALID_PASSWORD" || message === "EMAIL_NOT_FOUND") {
           const errorObject = {
