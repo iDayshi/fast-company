@@ -3,27 +3,24 @@ import Pagination from "../../common/pagination";
 import { paginate } from "../../../utils/paginate";
 import PropTypes from "prop-types";
 import GroupList from "../../common/groupList";
-import api from "../../../api";
 import SearchStatus from "../../ui/searchStatus";
 import UserTable from "../../ui/usersTable";
 import _ from "lodash";
 import { searchUser } from "../../../utils/searhUsers";
 import { useUser } from "../../../hooks/useUsers";
+import { useProfessions } from "../../../hooks/useProfession";
+import { useAuth } from "../../../hooks/useAuth";
 
 const UsersListPage = (props) => {
+  const { users } = useUser();
+  const { currentUser } = useAuth();
+  const { isLoading: professionLoading, professions } = useProfessions();
   const [currentPage, setCurrentPage] = useState(1);
-  const [profession, setProfession] = useState();
   const [selectedProf, setSelectedProf] = useState();
   const [sortBy, setSortBy] = useState({ iter: "name", order: "asc" });
   const [findUser, setFilterUser] = useState("");
 
-  const { users } = useUser();
-
   const pageSize = 7;
-
-  const handleDelete = (userId) => {
-    // setUsers((prevState) => prevState.filter((user) => user._id !== userId));
-  };
 
   const handleToogleBookMark = (id) => {
     users.map((user) => {
@@ -33,10 +30,6 @@ const UsersListPage = (props) => {
       return user;
     });
   };
-
-  useEffect(() => {
-    api.professions.fetchAll().then((data) => setProfession(data));
-  }, []);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -69,17 +62,24 @@ const UsersListPage = (props) => {
       </div>
     );
   } else {
-    let filteredUsers = selectedProf
-      ? users.filter((user) => user.profession.name === selectedProf.name)
-      : users;
+    function filterUsers(data) {
+      let filteredUsers = selectedProf
+        ? data.filter((user) => user.profession.name === selectedProf.name)
+        : data;
 
-    filteredUsers = findUser
-      ? searchUser(filteredUsers, findUser)
-      : filteredUsers;
+      filteredUsers = findUser
+        ? searchUser(filteredUsers, findUser)
+        : filteredUsers;
+      return filteredUsers.filter((u) => u._id !== currentUser._id);
+    }
 
-    const count = filteredUsers.length;
+    const count = filterUsers(users).length;
 
-    const sortedUsers = _.orderBy(filteredUsers, [sortBy.path], [sortBy.order]);
+    const sortedUsers = _.orderBy(
+      filterUsers(users),
+      [sortBy.path],
+      [sortBy.order]
+    );
 
     const userCrop = paginate(sortedUsers, currentPage, pageSize);
 
@@ -96,7 +96,7 @@ const UsersListPage = (props) => {
       );
     }
 
-    if (!userCrop.length && filteredUsers.length > 0) {
+    if (!userCrop.length && filterUsers(users).length > 0) {
       setCurrentPage(currentPage - 1);
     }
 
@@ -104,11 +104,11 @@ const UsersListPage = (props) => {
       <div className="d-flex flex-column align-items-center ">
         <div className="container d-flex flex-column justify-content-center align-items-center">
           <SearchStatus length={count} reset={clearFilter} />
-          {profession && (
+          {professions && !professionLoading && (
             <div className="list-group">
               <GroupList
                 selectedItem={selectedProf}
-                items={profession}
+                items={professions}
                 onItemSelect={handleProfessionSelect}
               />
               <button className="btn btn-danger m-2" onClick={clearFilter}>
@@ -129,7 +129,6 @@ const UsersListPage = (props) => {
               users={userCrop}
               onSort={handleSort}
               selectedSort={sortBy}
-              onDelete={handleDelete}
               onToggleBookMark={handleToogleBookMark}
             />
           )}

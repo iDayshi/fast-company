@@ -2,25 +2,21 @@ import React, { useState } from "react";
 import PropTypes from "prop-types";
 
 const TextField = ({ label, type, name, value, onChange, error }) => {
-  const getInputClasses = () => {
-    return "form-control" + (error ? " is-invalid" : "");
-  };
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = ({ target }) => {
     onChange({ name: target.name, value: target.value });
   };
-
-  const [showPassword, setShowPassword] = useState(false);
+  const getInputClasses = () => {
+    return "form-control" + (error ? " is-invalid" : "");
+  };
   const toggleShowPassword = () => {
     setShowPassword((prevState) => !prevState);
   };
-
   return (
-    <div className="mb-3">
-      <lable is="custom" htmlFor={name}>
-        {label}
-      </lable>
-      <div className="input-group has-validation mt-1">
+    <div className="mb-4">
+      <label htmlFor={name}>{label}</label>
+      <div className="input-group has-validation">
         <input
           type={showPassword ? "text" : type}
           id={name}
@@ -38,17 +34,14 @@ const TextField = ({ label, type, name, value, onChange, error }) => {
             <i className={"bi bi-eye" + (showPassword ? "-slash" : "")}></i>
           </button>
         )}
-
         {error && <div className="invalid-feedback">{error}</div>}
       </div>
     </div>
   );
 };
-
 TextField.defaultProps = {
   type: "text"
 };
-
 TextField.propTypes = {
   label: PropTypes.string,
   type: PropTypes.string,

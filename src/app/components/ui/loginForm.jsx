@@ -9,6 +9,7 @@ const LoginForm = () => {
   const history = useHistory();
   const [data, setData] = useState({ email: "", password: "", stayOn: false });
   const [errors, setErrors] = useState({});
+  const [enterError, setEnterError] = useState(null);
   const { signInWithPassword } = useAuth();
 
   const handleChange = (target) => {
@@ -16,6 +17,7 @@ const LoginForm = () => {
       ...PrevState,
       [target.name]: target.value
     }));
+    setEnterError(null);
   };
 
   const validatorConfig = {
@@ -59,9 +61,11 @@ const LoginForm = () => {
     if (!isValid) return;
     try {
       await signInWithPassword(data);
-      history.push("/");
+      history.push(
+        history.location.state ? history.location.state.from.pathname : "/"
+      );
     } catch (error) {
-      setErrors(error);
+      setEnterError(error.message);
     }
   };
 
@@ -85,10 +89,10 @@ const LoginForm = () => {
       <CheckBoxField value={data.stayOn} onChange={handleChange} name="stayOn">
         Оставаться в системе
       </CheckBoxField>
-
+      {enterError && <p className="text-danger">{enterError}</p>}
       <button
         type="submit"
-        disabled={!isValid}
+        disabled={!isValid || enterError}
         className="btn btn-primary w-100 mx-auto"
       >
         Войти
