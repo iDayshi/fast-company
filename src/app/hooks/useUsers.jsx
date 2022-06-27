@@ -23,8 +23,8 @@ const UserProvaider = ({ children }) => {
     }
   }, [error]);
 
-  function getUser(id) {
-    return users.find((q) => q._id === id);
+  function getUserById(userId) {
+    return users.find((u) => u._id === userId);
   }
 
   async function getUsers() {
@@ -42,7 +42,7 @@ const UserProvaider = ({ children }) => {
     setError(message);
   }
   return (
-    <UserContext.Provider value={{ users, getUser }}>
+    <UserContext.Provider value={{ users, getUserById }}>
       {!isLoading ? children : "Загрузка пользователей...."}
     </UserContext.Provider>
   );

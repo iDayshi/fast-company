@@ -3,6 +3,7 @@ export function validator(data, config) {
 
   function validate(validateMethod, data, config) {
     let statusValidate;
+
     switch (validateMethod) {
       case "isRequired": {
         if (typeof data === "boolean") {

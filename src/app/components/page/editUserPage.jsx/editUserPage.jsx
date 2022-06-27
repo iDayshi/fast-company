@@ -1,95 +1,86 @@
 import React, { useEffect, useState } from "react";
-import { useHistory, useParams } from "react-router-dom";
 import { validator } from "../../../utils/validator";
-import api from "../../../api";
 import TextField from "../../common/form/textField";
 import SelectField from "../../common/form/selectField";
 import RadioField from "../../common/form/radioField";
 import MultiSelectField from "../../common/form/multiSelectField";
+import { useProfessions } from "../../../hooks/useProfession";
+import { useQualities } from "../../../hooks/useQualities";
+import { useAuth } from "../../../hooks/useAuth";
+import { useHistory } from "react-router-dom";
+// import _ from "lodash";
 
 const EditUserPage = () => {
-  const { userId } = useParams();
   const history = useHistory();
+  const { currentUser, editUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState({
+    _id: "",
     name: "",
     email: "",
     profession: "",
-    sex: "male",
+    sex: "",
     qualities: []
   });
-  const [professions, setProfession] = useState([]);
-  const [qualities, setQualities] = useState([]);
+  const { professions } = useProfessions();
+  const { qualities } = useQualities();
+  const [qualityTransform, setQualityTransform] = useState();
+  const [professionTransform, setProfessionTransform] = useState();
   const [errors, setErrors] = useState({});
-  const getProfessionById = (id) => {
-    for (const prof of professions) {
-      if (prof.value === id) {
-        return { _id: prof.value, name: prof.label };
-      }
-    }
-  };
+
   const getQualities = (elements) => {
     const qualitiesArray = [];
     for (const elem of elements) {
-      for (const quality in qualities) {
-        if (elem.value === qualities[quality].value) {
-          qualitiesArray.push({
-            _id: qualities[quality].value,
-            name: qualities[quality].label,
-            color: qualities[quality].color
-          });
-        }
+      if (elem.value) {
+        qualitiesArray.push(elem.value);
+      } else {
+        qualitiesArray.push(elem);
       }
     }
     return qualitiesArray;
   };
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const isValid = validate();
     if (!isValid) return;
-    const { profession, qualities } = data;
-    api.users
-      .update(userId, {
-        ...data,
-        profession: getProfessionById(profession),
-        qualities: getQualities(qualities)
-      })
-      .then((data) => history.push(`/users/${data._id}`));
-    console.log({
-      ...data,
-      profession: getProfessionById(profession),
-      qualities: getQualities(qualities)
-    });
+    try {
+      setIsLoading(false);
+      await editUser(data);
+      history.push("/users/" + currentUser._id);
+      setIsLoading(false);
+    } catch (error) {
+      setErrors(error);
+    } finally {
+      setIsLoading(true);
+    }
   };
-  const transformData = (data) => {
-    return data.map((qual) => ({ label: qual.name, value: qual._id }));
-  };
+
   useEffect(() => {
     setIsLoading(true);
-    api.users.getById(userId).then(({ profession, qualities, ...data }) =>
-      setData((prevState) => ({
-        ...prevState,
-        ...data,
-        qualities: transformData(qualities),
-        profession: profession._id
-      }))
-    );
-    api.professions.fetchAll().then((data) => {
-      const professionsList = Object.keys(data).map((professionName) => ({
-        label: data[professionName].name,
-        value: data[professionName]._id
-      }));
-      setProfession(professionsList);
-    });
-    api.qualities.fetchAll().then((data) => {
-      const qualitiesList = Object.keys(data).map((optionName) => ({
-        value: data[optionName]._id,
-        label: data[optionName].name,
-        color: data[optionName].color
-      }));
-      setQualities(qualitiesList);
-    });
+    setData(() => ({
+      name: currentUser.name,
+      email: currentUser.email,
+      sex: currentUser.sex,
+      qualities: currentUser.qualities,
+      profession: currentUser.profession
+    }));
+
+    const qualitiesList = Object.values(qualities).map((quality) => ({
+      value: quality._id,
+      label: quality.name,
+      color: quality.color
+    }));
+
+    const professionList = Object.values(professions).map((prof) => ({
+      value: prof._id,
+      label: prof.name
+    }));
+
+    setProfessionTransform(professionList);
+    setQualityTransform(qualitiesList);
   }, []);
+
   useEffect(() => {
     if (data._id) setIsLoading(false);
   }, [data]);
@@ -107,18 +98,33 @@ const EditUserPage = () => {
       isRequired: {
         message: "Введите ваше имя"
       }
+    },
+    qualities: {
+      min: {
+        message: "Выберите хотя бы одно качество",
+        value: 1
+      }
     }
   };
   useEffect(() => {
     validate();
   }, [data]);
+
   const handleChange = (target) => {
-    setData((prevState) => ({
-      ...prevState,
-      [target.name]: target.value
-    }));
+    if (target.name === "qualities") {
+      setData((prevState) => ({
+        ...prevState,
+        qualities: getQualities(target.value)
+      }));
+    } else {
+      setData((prevState) => ({
+        ...prevState,
+        [target.name]: target.value
+      }));
+    }
   };
-  const validate = () => {
+
+  const validate = async () => {
     const errors = validator(data, validatorConfig);
     setErrors(errors);
     return Object.keys(errors).length === 0;
@@ -126,14 +132,15 @@ const EditUserPage = () => {
   const isValid = Object.keys(errors).length === 0;
   return (
     <div className="position-absolute top-50 start-50 translate-middle p-3 mb-2 bg-dark text-white d-flex justify-content-center align-items-center flex-column">
-      {!isLoading && Object.keys(professions).length > 0 ? (
+      {isLoading ? (
         <form
           className="d-flex justify-content-center align-items-center flex-column"
           onSubmit={handleSubmit}
         >
           <h2>
             <img
-              src={`/avatars/${userId}.jpg`}
+              src={currentUser.image}
+              width="200"
               className="img-thumbnail"
               alt="..."
             />
@@ -154,11 +161,11 @@ const EditUserPage = () => {
           />
           <SelectField
             label="Выбери свою профессию"
-            defaultOption="Choose..."
-            options={professions}
+            defaultOption={currentUser.profession}
+            options={professionTransform}
             name="profession"
             onChange={handleChange}
-            value={data.profession}
+            value={currentUser.profession}
             error={errors.profession}
           />
           <RadioField
@@ -174,10 +181,11 @@ const EditUserPage = () => {
           />
           <MultiSelectField
             defaultValue={data.qualities}
-            options={qualities}
+            options={qualityTransform}
             onChange={handleChange}
             name="qualities"
             label="Выберите ваши качества"
+            error={errors.qualities}
           />
           <div>
             <button

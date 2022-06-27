@@ -10,6 +10,7 @@ const SelectField = ({
   name,
   error
 }) => {
+  const defaultValueTransform = options.find((q) => q.value === defaultOption);
   const handleChange = ({ target }) => {
     onChange({ name: target.name, value: target.value });
   };
@@ -35,7 +36,7 @@ const SelectField = ({
         onChange={handleChange}
         defaultValue={defaultOption}
       >
-        <option value={defaultOption} disabled hidden>
+        <option value={defaultValueTransform} disabled hidden>
           {defaultOption}
         </option>
         {optionsArray.length > 0 &&

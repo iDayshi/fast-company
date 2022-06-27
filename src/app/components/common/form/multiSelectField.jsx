@@ -2,7 +2,24 @@ import React from "react";
 import Select from "react-select";
 import PropTypes from "prop-types";
 
-const MultiSelectField = ({ options, onChange, name, label, defaultValue }) => {
+const MultiSelectField = ({
+  options,
+  onChange,
+  name,
+  label,
+  defaultValue,
+  error
+}) => {
+  const arrDefaultValue = [];
+
+  defaultValue.forEach((v) => {
+    for (let i = 0; i < options.length; i++) {
+      if (options[i].value === v) {
+        arrDefaultValue.push(options[i]);
+      }
+    }
+  });
+
   const optionsArray =
     !Array.isArray(options) && typeof options === "object"
       ? Object.values(options)
@@ -20,20 +37,24 @@ const MultiSelectField = ({ options, onChange, name, label, defaultValue }) => {
   };
 
   return (
-    <div className="mb-4">
-      <label className="form-label">{label}</label>
-      <Select
-        isMulti
-        closeMenuOnSelect={false}
-        defaultValue={defaultValue}
-        options={optionsArray}
-        className="basic-multi-select"
-        classNamePrefix="select"
-        onChange={handleChange}
-        name={name}
-        styles={customStyles}
-      />
-    </div>
+    <>
+      <div className="mb-4">
+        <label className="form-label">{label}</label>
+
+        <Select
+          isMulti
+          closeMenuOnSelect={false}
+          defaultValue={arrDefaultValue}
+          options={optionsArray}
+          className="basic-multi-select"
+          classNamePrefix="select"
+          onChange={handleChange}
+          name={name}
+          styles={customStyles}
+        />
+        {error && <p className="text-danger">{error}</p>}
+      </div>
+    </>
   );
 };
 MultiSelectField.propTypes = {
@@ -41,7 +62,8 @@ MultiSelectField.propTypes = {
   onChange: PropTypes.func,
   name: PropTypes.string,
   label: PropTypes.string,
-  defaultValue: PropTypes.array
+  defaultValue: PropTypes.array,
+  error: PropTypes.string
 };
 
 export default MultiSelectField;
