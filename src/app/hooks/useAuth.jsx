@@ -113,12 +113,9 @@ const AuthProvaider = ({ children }) => {
     }
   }
 
-  async function editUser(data) {
+  async function updateUserData(data) {
     try {
-      const { content } = await userServisece.editCurrentUser(
-        data,
-        currentUser._id
-      );
+      const { content } = await userServisece.update(data);
       setUser(content);
     } catch {
       errorCatcher(error);
@@ -149,7 +146,13 @@ const AuthProvaider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ signUp, signInWithPassword, currentUser, logOut, editUser }}
+      value={{
+        signUp,
+        signInWithPassword,
+        currentUser,
+        logOut,
+        updateUserData
+      }}
     >
       {!isLoading ? children : "Loading...."}
     </AuthContext.Provider>

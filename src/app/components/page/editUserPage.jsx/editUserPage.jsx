@@ -4,86 +4,76 @@ import TextField from "../../common/form/textField";
 import SelectField from "../../common/form/selectField";
 import RadioField from "../../common/form/radioField";
 import MultiSelectField from "../../common/form/multiSelectField";
-import { useProfessions } from "../../../hooks/useProfession";
-import { useQualities } from "../../../hooks/useQualities";
-import { useAuth } from "../../../hooks/useAuth";
-import { useHistory } from "react-router-dom";
-// import _ from "lodash";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  getQualities,
+  getQualitiesLoadingStatus
+} from "../../../store/qualities";
+import {
+  getProfessions,
+  getProfessionsLoadingStatus
+} from "../../../store/professions";
+import { getCurrentUserData, updateUser } from "../../../store/users";
 
 const EditUserPage = () => {
-  const history = useHistory();
-  const { currentUser, editUser } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
-  const [data, setData] = useState({
-    _id: "",
-    name: "",
-    email: "",
-    profession: "",
-    sex: "",
-    qualities: []
-  });
-  const { professions } = useProfessions();
-  const { qualities } = useQualities();
-  const [qualityTransform, setQualityTransform] = useState();
-  const [professionTransform, setProfessionTransform] = useState();
+  const dispatch = useDispatch();
+  const currentUser = useSelector(getCurrentUserData());
+  const [isLoading, setIsLoading] = useState(true);
+  const [data, setData] = useState();
+  const professions = useSelector(getProfessions());
+  const professionLoading = useSelector(getProfessionsLoadingStatus());
+  const qualities = useSelector(getQualities());
+  const qualitiesLoading = useSelector(getQualitiesLoadingStatus());
   const [errors, setErrors] = useState({});
 
-  const getQualities = (elements) => {
+  const professionsList = professions.map((p) => ({
+    label: p.name,
+    value: p._id
+  }));
+
+  const qualitiesList = qualities.map((q) => ({ label: q.name, value: q._id }));
+
+  function getQualitiesListByIds(qualitiesIds) {
     const qualitiesArray = [];
-    for (const elem of elements) {
-      if (elem.value) {
-        qualitiesArray.push(elem.value);
-      } else {
-        qualitiesArray.push(elem);
+    for (const qualId of qualitiesIds) {
+      for (const quality of qualities) {
+        if (quality._id === qualId) {
+          qualitiesArray.push(quality);
+          break;
+        }
       }
     }
     return qualitiesArray;
+  }
+
+  const transformData = (data) => {
+    const result = getQualitiesListByIds(data).map((qual) => ({
+      label: qual.name,
+      value: qual._id
+    }));
+    return result;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const isValid = validate();
     if (!isValid) return;
-    try {
-      setIsLoading(false);
-      await editUser(data);
-      history.push("/users/" + currentUser._id);
-      setIsLoading(false);
-    } catch (error) {
-      setErrors(error);
-    } finally {
-      setIsLoading(true);
-    }
+    dispatch(
+      updateUser({
+        ...data,
+        qualities: data.qualities.map((q) => q.value)
+      })
+    );
   };
 
   useEffect(() => {
-    setIsLoading(true);
-    setData(() => ({
-      name: currentUser.name,
-      email: currentUser.email,
-      sex: currentUser.sex,
-      qualities: currentUser.qualities,
-      profession: currentUser.profession
-    }));
-
-    const qualitiesList = Object.values(qualities).map((quality) => ({
-      value: quality._id,
-      label: quality.name,
-      color: quality.color
-    }));
-
-    const professionList = Object.values(professions).map((prof) => ({
-      value: prof._id,
-      label: prof.name
-    }));
-
-    setProfessionTransform(professionList);
-    setQualityTransform(qualitiesList);
-  }, []);
-
-  useEffect(() => {
-    if (data._id) setIsLoading(false);
-  }, [data]);
+    if (!professionLoading && !qualitiesLoading && currentUser && !data) {
+      setData({
+        ...currentUser,
+        qualities: transformData(currentUser.qualities)
+      });
+    }
+  }, [professionLoading, qualitiesLoading, currentUser, data]);
 
   const validatorConfig = {
     email: {
@@ -106,22 +96,18 @@ const EditUserPage = () => {
       }
     }
   };
+
   useEffect(() => {
-    validate();
+    if (data && isLoading) {
+      setIsLoading(false);
+    }
   }, [data]);
 
   const handleChange = (target) => {
-    if (target.name === "qualities") {
-      setData((prevState) => ({
-        ...prevState,
-        qualities: getQualities(target.value)
-      }));
-    } else {
-      setData((prevState) => ({
-        ...prevState,
-        [target.name]: target.value
-      }));
-    }
+    setData((prevState) => ({
+      ...prevState,
+      [target.name]: target.value
+    }));
   };
 
   const validate = async () => {
@@ -129,10 +115,15 @@ const EditUserPage = () => {
     setErrors(errors);
     return Object.keys(errors).length === 0;
   };
+
+  useEffect(() => {
+    validate();
+  }, [data]);
+
   const isValid = Object.keys(errors).length === 0;
   return (
     <div className="position-absolute top-50 start-50 translate-middle p-3 mb-2 bg-dark text-white d-flex justify-content-center align-items-center flex-column">
-      {isLoading ? (
+      {!isLoading && Object.keys(professions).length > 0 ? (
         <form
           className="d-flex justify-content-center align-items-center flex-column"
           onSubmit={handleSubmit}
@@ -162,7 +153,7 @@ const EditUserPage = () => {
           <SelectField
             label="Выбери свою профессию"
             defaultOption={currentUser.profession}
-            options={professionTransform}
+            options={professionsList}
             name="profession"
             onChange={handleChange}
             value={currentUser.profession}
@@ -181,7 +172,7 @@ const EditUserPage = () => {
           />
           <MultiSelectField
             defaultValue={data.qualities}
-            options={qualityTransform}
+            options={qualitiesList}
             onChange={handleChange}
             name="qualities"
             label="Выберите ваши качества"

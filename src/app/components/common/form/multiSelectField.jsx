@@ -10,16 +10,6 @@ const MultiSelectField = ({
   defaultValue,
   error
 }) => {
-  const arrDefaultValue = [];
-
-  defaultValue.forEach((v) => {
-    for (let i = 0; i < options.length; i++) {
-      if (options[i].value === v) {
-        arrDefaultValue.push(options[i]);
-      }
-    }
-  });
-
   const optionsArray =
     !Array.isArray(options) && typeof options === "object"
       ? Object.values(options)
@@ -44,7 +34,7 @@ const MultiSelectField = ({
         <Select
           isMulti
           closeMenuOnSelect={false}
-          defaultValue={arrDefaultValue}
+          defaultValue={defaultValue}
           options={optionsArray}
           className="basic-multi-select"
           classNamePrefix="select"

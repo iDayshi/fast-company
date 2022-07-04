@@ -18,10 +18,10 @@ const userServisece = {
     );
     return data;
   },
-  editCurrentUser: async (update) => {
+  update: async (payload) => {
     const { data } = await httpServise.patch(
       userEndpoint + localStorageService.getUserId(),
-      update
+      payload
     );
     return data;
   }

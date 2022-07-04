@@ -7,14 +7,18 @@ import SearchStatus from "../../ui/searchStatus";
 import UserTable from "../../ui/usersTable";
 import _ from "lodash";
 import { searchUser } from "../../../utils/searhUsers";
-import { useUser } from "../../../hooks/useUsers";
-import { useProfessions } from "../../../hooks/useProfession";
-import { useAuth } from "../../../hooks/useAuth";
+import { useSelector } from "react-redux";
+import {
+  getProfessions,
+  getProfessionsLoadingStatus
+} from "../../../store/professions";
+import { getCurrentUserId, getUsersList } from "../../../store/users";
 
 const UsersListPage = (props) => {
-  const { users } = useUser();
-  const { currentUser } = useAuth();
-  const { isLoading: professionLoading, professions } = useProfessions();
+  const users = useSelector(getUsersList());
+  const currentUserId = useSelector(getCurrentUserId());
+  const professions = useSelector(getProfessions());
+  const professionLoading = useSelector(getProfessionsLoadingStatus());
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedProf, setSelectedProf] = useState();
   const [sortBy, setSortBy] = useState({ iter: "name", order: "asc" });
@@ -51,26 +55,16 @@ const UsersListPage = (props) => {
     setFilterUser(event.target.value);
   };
 
-  if (!users) {
-    return (
-      <div className="container d-flex justify-content-center align-items-center m-10">
-        <h2>
-          <div className="spinner-grow text-info" role="status">
-            <span className="visually m-5">Загрузка пользователей...</span>
-          </div>
-        </h2>
-      </div>
-    );
-  } else {
+  if (users) {
     function filterUsers(data) {
       let filteredUsers = selectedProf
-        ? data.filter((user) => user.profession.name === selectedProf.name)
+        ? data.filter((user) => user.profession === selectedProf._id)
         : data;
 
       filteredUsers = findUser
         ? searchUser(filteredUsers, findUser)
         : filteredUsers;
-      return filteredUsers.filter((u) => u._id !== currentUser._id);
+      return filteredUsers.filter((u) => u._id !== currentUserId);
     }
 
     const count = filterUsers(users).length;
